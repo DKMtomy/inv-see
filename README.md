@@ -10,3 +10,8 @@
 Ever wanted to have a sneaky peek into someone's inventory? Or maybe you caught someone red-handed and want to confiscate an item? **invsee+** is here to rescue. Unlike other paid add-ons, invsee+ offers you these features absolutely free of cost!
 
 ---
+
+credits to:
+https://github.com/Herobrine643928/Chest-UI/tree/additional-features
+
+---
