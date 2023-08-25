@@ -1,0 +1,31 @@
+{
+  "format_version": 2,
+
+  "header": {
+    "name": "inv see",
+    "description": "inv see plugin made by Vekqi",
+    "uuid": "2be25839-4996-48c4-a10e-d478c80490a3",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+
+  "modules": [
+    {
+      "type": "script",
+      "uuid":  "661d9a2d-7710-4139-b70a-bb17c33a877b",
+      "version": [1, 0, 0],
+      "entry": "scripts/index.js"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.4.0-beta"
+    },
+    {
+			"module_name": "@minecraft/server-ui",
+			"version": "1.2.0-beta"
+		}
+  ]
+}

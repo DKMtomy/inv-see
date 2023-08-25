@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "ES6",
+    "lib": ["ES2017","es6", "dom","es2021"],
+    "outDir": "scripts",
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "preserveConstEnums": true,
+    "sourceMap": false,
+    "skipLibCheck": true,
+    // Set declaratoin to true when creating a module.
+    "declaration": false
+  },
+  "include": ["src"]
+}
