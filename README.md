@@ -1,6 +1,5 @@
 # invsee+ 🎒🔍
 
-![Invsee+ Logo](link-to-logo-if-you-have-one.png)
 
 **The first-ever free** add-on that not only lets you peek into someone's inventory but also gives you the power to remove an item from a player's inventory! 🌟🎉
 
