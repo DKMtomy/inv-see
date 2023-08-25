@@ -181,14 +181,16 @@ function showInventory(player, target) {
     }
     // Main Inventory it is suposed to start at slot 2 and then go intill 8 and then from 11 to 17 and then from 20 to 26 and then from 29 to 35 and then from 38 to 44 but we make a formula
     const inventorySlots = getInventorySlots(inventoryItems.length);
-    for (let i = 0; i < inventorySlots.length; i++) {
-        if (!inventoryItems[i])
+    for (let i = 0; i < inventoryItems.length; i++) {
+        let item = inventoryItems[i];
+        let slot = inventorySlots[i];
+        if (!item)
             continue;
-        let enchantmentsStringArray = inventoryItems[i].enchantments.map(enchantment => {
+        let enchantmentsStringArray = item.enchantments.map(enchantment => {
             return `${enchantment.name} (${enchantment.level})`;
         });
         let enchanted = enchantmentsStringArray.length > 0;
-        form.button(inventorySlots[i], `${inventoryItems[i].name || inventoryItems[i].typeId.replace("minecraft:", "").replace("_", " ")}`, enchantmentsStringArray, inventoryItems[i].typeId, inventoryItems[i].amount, enchanted);
+        form.button(slot, `${item.name || item.typeId.replace("minecraft:", "").replace("_", " ")}`, enchantmentsStringArray, item.typeId, item.amount, enchanted);
     }
     form.show(player).then(response => {
         var _a;
@@ -223,6 +225,10 @@ function showInventory(player, target) {
             removeItemMenu(player, target, item.slot);
         }
     });
+}
+function getInventorySlots(length) {
+    let desiredSlots = [2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26, 29, 30, 31, 32, 33, 34, 35, 38, 39, 40, 41, 42, 43, 44];
+    return desiredSlots.slice(0, length);
 }
 function removeArmorMenu(player, target, slot) {
     const form = new ChestFormData()
@@ -275,14 +281,14 @@ function removeItemMenu(player, target, slot) {
         }
     });
 }
-function getInventorySlots(numItems) {
-    const slots = [];
-    const groupSize = 7;
-    for (let i = 0; i < numItems; i++) {
-        slots.push(2 + (i % groupSize) + (2 * Math.floor(i / groupSize)));
-    }
-    return slots;
-}
+// function getInventorySlots(numItems: number): number[] {
+//     const slots = [];
+//     const groupSize = 7;
+//     for (let i = 0; i < numItems; i++) {
+//         slots.push(2 + (i % groupSize) + (2 * Math.floor(i / groupSize)));
+//     }
+//     return slots;
+// }
 function getEquipmentEnchantments(equipment) {
     if (!equipment)
         return [];
