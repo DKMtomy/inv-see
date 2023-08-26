@@ -20,6 +20,9 @@ https://cdn.discordapp.com/attachments/884105334229172266/1145088062330781827/WW
 
 then you add them into your BH and RP then either create a new world or add it to an existing world and make sure beta apis are on then go into your game and use a compass and it should bring up the menu!
 
+and heres a vid:
+https://vekqi.likes.cash/2023-08-26_22-16-55.mp4
+
 ---
 
 credits to:
