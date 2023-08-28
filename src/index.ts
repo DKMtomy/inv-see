@@ -19,19 +19,19 @@ enum CEquipmentSlot {
 }
 
 function getEnchants(iterator: Iterator<Enchantment>): EnchantmentC[] {
-    let enchantments: EnchantmentC[] = [];
-    let nextItem = iterator.next();
+    const iterable = {
+        [Symbol.iterator]: () => iterator
+    };
 
-    while (!nextItem.done) {
-        enchantments.push({
-            name: `Enchantment: ${capitalize(nextItem.value.type.id)}`,
-            level: nextItem.value.level
-        });
-        nextItem = iterator.next();
-    }
+    // Convert the iterable to an array
+    const enchantmentArray: Enchantment[] = [...iterable];
 
-    return enchantments;
+    return enchantmentArray.map(enchantment => ({
+        name: `Enchantment: ${capitalize(enchantment.type.id)}`,
+        level: enchantment.level
+    }));
 }
+
 
 function capitalize(text: string): string {
     return text.charAt(0).toUpperCase() + text.slice(1);
@@ -70,6 +70,10 @@ function primaryMenu(player: Player) {
     })
 };
 
+function isWithinRange(value: number, range: { start: number, end: number }): boolean {
+    return value >= range.start && value <= range.end;
+}
+
 function showInventory(player: Player, target: Player) {
 
     const hotbar = [] as Item[]
@@ -101,9 +105,9 @@ function showInventory(player: Player, target: Player) {
             inventory: { start: 9, end: 35 }
         }
 
-        if (i >= SLOT_RANGES.hotbar.start && i <= SLOT_RANGES.hotbar.end) {
+        if (isWithinRange(i, SLOT_RANGES.hotbar)) {
             hotbar.push(itemData);
-        } else if (i >= SLOT_RANGES.inventory.start && i <= SLOT_RANGES.inventory.end) {
+        } else if (isWithinRange(i, SLOT_RANGES.inventory)) {
             inventoryItems.push(itemData);
         }
     }
@@ -115,66 +119,37 @@ function showInventory(player: Player, target: Player) {
     const equipmentData: Record<string, any> = {};
 
     equipmentSlots.forEach(slot => {
+        //@ts-expect-error
+        const item = equipmentInventory.getEquipment(slot);
         equipmentData[slot] = {
-            //@ts-expect-error
-            item: equipmentInventory.getEquipment(slot) ?? null,
-            //@ts-expect-error
-            enchantments: getEquipmentEnchantments(equipmentInventory.getEquipment(slot))
+            item: item ?? null,
+            enchantments: getEquipmentEnchantments(item)
         };
     });
 
-    if (equipmentData.offhand.item) {
-        offhand.push({
-            name: equipmentData.offhand.item.nameTag,
-            amount: equipmentData.offhand.item.amount,
-            typeId: equipmentData.offhand.item.typeId,
-            slot: 0,
-            enchantments: getEnchants(equipmentData.offhand.enchantments[Symbol.iterator]())
-        })
-    }
+    const slotsMapping = [
+        { slotName: 'offhand', array: offhand, slotNum: 0 },
+        { slotName: 'head', array: armor, slotNum: 0 },
+        { slotName: 'chest', array: armor, slotNum: 1 },
+        { slotName: 'legs', array: armor, slotNum: 2 },
+        { slotName: 'feet', array: armor, slotNum: 3 }
+    ];
 
-    if (equipmentData.head.item) {
-        armor.push({
-            name: equipmentData.head.item.nameTag,
-            amount: equipmentData.head.item.amount,
-            typeId: equipmentData.head.item.typeId,
-            slot: 0,
-            enchantments: getEnchants(equipmentData.head.enchantments[Symbol.iterator]())
-        })
-    }
-
-    if (equipmentData.chest.item) {
-        armor.push({
-            name: equipmentData.chest.item.nameTag,
-            amount: equipmentData.chest.item.amount,
-            typeId: equipmentData.chest.item.typeId,
-            slot: 1,
-            enchantments: getEnchants(equipmentData.chest.enchantments[Symbol.iterator]())
-        })
-    }
-
-    if (equipmentData.legs.item) {
-        armor.push({
-            name: equipmentData.legs.item.nameTag,
-            amount: equipmentData.legs.item.amount,
-            typeId: equipmentData.legs.item.typeId,
-            slot: 2,
-            enchantments: getEnchants(equipmentData.legs.enchantments[Symbol.iterator]())
-        })
-    }
-
-    if (equipmentData.feet.item) {
-        armor.push({
-            name: equipmentData.feet.item.nameTag,
-            amount: equipmentData.feet.item.amount,
-            typeId: equipmentData.feet.item.typeId,
-            slot: 3,
-            enchantments: getEnchants(equipmentData.feet.enchantments[Symbol.iterator]())
-        })
-    }
+    slotsMapping.forEach(({ slotName, array, slotNum }) => {
+        const slotData = equipmentData[slotName];
+        if (slotData.item) {
+            array.push({
+                name: slotData.item.nameTag,
+                amount: slotData.item.amount,
+                typeId: slotData.item.typeId,
+                slot: slotNum,
+                enchantments: getEnchants(slotData.enchantments[Symbol.iterator]())
+            });
+        }
+    });
 
     const form = new ChestFormData('large')
-        .title(`§l§a${target.name}'s Inventory`)
+        .title(`§l§6${target.name}'s Inventory`)
         .pattern([0, 0], [
             '_x_______',
             '_x_______',
@@ -219,6 +194,8 @@ function showInventory(player: Player, target: Player) {
         form.button(i + 45, `${hotbar[i].name || hotbar[i].typeId.replace("minecraft:", "").replace("_", " ")}`, enchantmentsStringArray, hotbar[i].typeId, hotbar[i].amount, enchanted);
     }
 
+    form.button(44, `§l§aRefresh`, ['This refreshes the players inventory'], "minecraft:green_wool")
+
     // Main Inventory it is suposed to start at slot 2 and then go intill 8 and then from 11 to 17 and then from 20 to 26 and then from 29 to 35 and then from 38 to 44 but we make a formula
     const inventorySlots = getInventorySlots(inventoryItems.length);
 
@@ -226,13 +203,13 @@ function showInventory(player: Player, target: Player) {
         let item = inventoryItems[i];
         let slot = inventorySlots[i];
         if (!item) continue;
-        
+
         let enchantmentsStringArray = item.enchantments.map(enchantment => {
             return `${enchantment.name} (${enchantment.level})`;
         });
-        
+
         let enchanted = enchantmentsStringArray.length > 0;
-        
+
         form.button(slot, `${item.name || item.typeId.replace("minecraft:", "").replace("_", " ")}`, enchantmentsStringArray, item.typeId, item.amount, enchanted);
     }
 
@@ -281,15 +258,23 @@ function showInventory(player: Player, target: Player) {
         }
 
         //if it is the inventory get the right item cus for some reason all the slots get pushed forward if its an empty slot
-        if (response.selection >= 2 && response.selection <= 44) {
-            const item = inventoryItems[response.selection - 2]
-            removeItemMenu(player, target, item.slot)
+        if (response.selection >= 2 && response.selection <= 35) {
+            if (desiredSlots.includes(response.selection)) {
+                const item = inventoryItems[desiredSlots.indexOf(response.selection)]
+                removeItemMenu(player, target, item.slot)
+            }
+        }
+
+        if (response.selection === 44) {
+            showInventory(player, target)
         }
     })
 }
 
+const desiredSlots = [2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26, 29, 30, 31, 32, 33, 34, 35];
+
 function getInventorySlots(length: number) {
-    let desiredSlots = [2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 24, 25, 26, 29, 30, 31, 32, 33, 34, 35, 38, 39, 40, 41, 42, 43, 44];
+
     return desiredSlots.slice(0, length);
 }
 
@@ -354,18 +339,6 @@ function removeItemMenu(player: Player, target: Player, slot: number) {
         }
     })
 }
-
-// function getInventorySlots(numItems: number): number[] {
-//     const slots = [];
-//     const groupSize = 7;
-
-//     for (let i = 0; i < numItems; i++) {
-//         slots.push(2 + (i % groupSize) + (2 * Math.floor(i / groupSize)));
-//     }
-
-//     return slots;
-// }
-
 
 function getEquipmentEnchantments(equipment: any): any[] {
     if (!equipment) return [];
